@@ -1,7 +1,10 @@
 # Renewly — Prototype Wireframes
 
 26 screenshots captured at **360 × 800** (Android Large canvas), light + dark themes.
-Regenerate anytime with `python /app/scripts/capture_wireframes.py`.
+
+**`renewly_flow_board.png`** — single presentation-ready flow board (2302×4370): all 6 flows with arrows, action labels and dark-mode gallery.
+
+Regenerate: `python /app/scripts/capture_wireframes.py` (screens) then `python /app/scripts/build_flow_board.py` (board).
 
 ## Flow 1 — Entry & Auth (mock)
 | # | File | Screen |

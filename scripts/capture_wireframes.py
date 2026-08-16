@@ -58,10 +58,12 @@ async def main():
         await page.wait_for_selector('[data-testid="onboarding-cta-0"]', timeout=15000)
         await shot(page, "04_onboarding_1")
         await page.click('[data-testid="onboarding-cta-0"]', force=True)
-        await page.wait_for_timeout(600)
+        await page.wait_for_selector('text=Renewly tells you before it renews.', timeout=10000)
+        await page.wait_for_timeout(1500)  # let scroll animation settle
         await shot(page, "05_onboarding_2")
         await page.click('[data-testid="onboarding-cta-1"]', force=True)
-        await page.wait_for_timeout(600)
+        await page.wait_for_selector('text=Let us do the finding.', timeout=10000)
+        await page.wait_for_timeout(1500)
         await shot(page, "06_onboarding_3")
 
         await goto(page, "/home")

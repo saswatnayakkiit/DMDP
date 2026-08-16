@@ -65,6 +65,7 @@ export default function Onboarding() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         keyExtractor={(it) => it.key}
+        getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
         onMomentumScrollEnd={(e) => setI(Math.round(e.nativeEvent.contentOffset.x / width))}
         renderItem={({ item }) => {
           const accent = item.accent === 'amber' ? C.amber : C.teal;
