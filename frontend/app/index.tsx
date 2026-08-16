@@ -1,102 +1,44 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, useWindowDimensions, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Palette, S } from '@/src/theme';
 import { useTheme } from '@/src/store';
-import { PrimaryBtn } from '@/src/components';
+import { PrimaryBtn, BrandMark } from '@/src/components';
 
-const FRAMES = [
-  {
-    key: 'f1',
-    accent: 'teal' as const,
-    icon: 'wallet' as const,
-    headline: 'Subscriptions add up quietly.',
-    sub: 'The average person has 8 recurring payments and forgets at least 2 of them.',
-    cta: 'Next',
-  },
-  {
-    key: 'f2',
-    accent: 'amber' as const,
-    icon: 'calendar' as const,
-    headline: 'Renewly tells you before it renews.',
-    sub: 'See every Autopay, card mandate and app subscription in one calendar.',
-    cta: 'Next',
-  },
-  {
-    key: 'f3',
-    accent: 'teal' as const,
-    icon: 'shield-checkmark' as const,
-    headline: 'Let us do the finding.',
-    sub: "Allow SMS access to auto-detect debits, or add them yourself in 30 seconds.",
-    cta: 'Allow SMS access',
-  },
-];
-
-export default function Onboarding() {
+export default function Landing() {
   const router = useRouter();
   const { C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
-  const { width } = useWindowDimensions();
-  const [i, setI] = useState(0);
-  const ref = useRef<FlatList>(null);
-
-  const goHome = () => router.replace('/home' as any);
-
-  const next = () => {
-    Haptics.selectionAsync();
-    if (i < FRAMES.length - 1) {
-      const ni = i + 1;
-      setI(ni);
-      ref.current?.scrollToIndex({ index: ni, animated: true });
-    } else {
-      goHome();
-    }
-  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <FlatList
-        ref={ref}
-        data={FRAMES}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(it) => it.key}
-        onMomentumScrollEnd={(e) => setI(Math.round(e.nativeEvent.contentOffset.x / width))}
-        renderItem={({ item }) => {
-          const accent = item.accent === 'amber' ? C.amber : C.teal;
-          return (
-            <View style={{ width, paddingHorizontal: S.pad }}>
-              <View style={styles.illWrap}>
-                <View style={[styles.illCircle, { backgroundColor: accent + '22' }]}>
-                  <Ionicons name={item.icon} size={72} color={accent} />
-                </View>
-                <View style={[styles.blob, { backgroundColor: C.amber + '33', top: 20, left: 30 }]} />
-                <View style={[styles.blob, { backgroundColor: C.teal + '33', bottom: 30, right: 20, width: 40, height: 40 }]} />
-              </View>
-              <Text style={styles.h1}>{item.headline}</Text>
-              <Text style={styles.sub}>{item.sub}</Text>
-            </View>
-          );
-        }}
-      />
-
-      <View style={styles.dots}>
-        {FRAMES.map((_, idx) => (
-          <View key={idx} style={[styles.dot, idx === i && { backgroundColor: C.teal, width: 20 }]} />
-        ))}
+      <View style={styles.hero}>
+        <BrandMark size={88} />
+        <Text style={styles.wordmark} testID="brand-name">Renewly</Text>
+        <Text style={styles.tagline}>Know before it renews.</Text>
+        <Text style={styles.blurb}>
+          Every UPI Autopay, card mandate and app subscription — tracked in one place, with a nudge before money leaves your account.
+        </Text>
       </View>
 
-      <View style={{ paddingHorizontal: S.pad, paddingBottom: 8 }}>
-        <PrimaryBtn testID={`onboarding-cta-${i}`} label={FRAMES[i].cta} onPress={next} />
-        {i === FRAMES.length - 1 && (
-          <Pressable testID="onboarding-skip" onPress={() => { Haptics.selectionAsync(); goHome(); }} style={{ marginTop: 12, alignItems: 'center', padding: 8 }}>
-            <Text style={{ color: C.teal, fontSize: 14, fontWeight: '600' }}>Skip, I'll add manually</Text>
-          </Pressable>
-        )}
+      <View style={styles.footer}>
+        <PrimaryBtn
+          testID="landing-signup"
+          label="Create account"
+          onPress={() => router.push({ pathname: '/auth', params: { mode: 'signup' } } as any)}
+        />
+        <Pressable
+          testID="landing-signin"
+          onPress={() => { Haptics.selectionAsync(); router.push({ pathname: '/auth', params: { mode: 'signin' } } as any); }}
+          style={{ alignItems: 'center', padding: 12, marginTop: 8 }}
+        >
+          <Text style={{ color: C.sub, fontSize: 14 }}>
+            Already tracking with us? <Text style={{ color: C.teal, fontWeight: '700' }}>Sign in</Text>
+          </Text>
+        </Pressable>
+        <Text style={styles.legal}>Made for India · UPI-first · Free to start</Text>
       </View>
     </SafeAreaView>
   );
@@ -104,11 +46,10 @@ export default function Onboarding() {
 
 const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
-  illWrap: { height: 260, alignItems: 'center', justifyContent: 'center', marginTop: 24 },
-  illCircle: { width: 160, height: 160, borderRadius: 80, alignItems: 'center', justifyContent: 'center' },
-  blob: { width: 24, height: 24, borderRadius: 12, position: 'absolute' },
-  h1: { fontSize: 22, fontWeight: '800', color: C.text, marginTop: 32, textAlign: 'left' },
-  sub: { fontSize: 15, color: C.sub, marginTop: 12, lineHeight: 22 },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginVertical: 20 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.border },
+  hero: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  wordmark: { color: C.text, fontSize: 36, fontWeight: '800', marginTop: 20, letterSpacing: -0.5 },
+  tagline: { color: C.teal, fontSize: 16, fontWeight: '700', marginTop: 6 },
+  blurb: { color: C.sub, fontSize: 14, lineHeight: 21, textAlign: 'center', marginTop: 16 },
+  footer: { paddingHorizontal: S.pad, paddingBottom: 12 },
+  legal: { color: C.sub, fontSize: 11, textAlign: 'center', marginTop: 12, opacity: 0.8 },
 });

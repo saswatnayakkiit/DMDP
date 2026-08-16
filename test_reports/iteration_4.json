@@ -1,0 +1,28 @@
+{
+  "summary": "Frontend-only Playwright verification of Renewly brand-first entry flow + mock auth. All 9 requested flows PASS: landing renders BrandMark + 'Renewly' wordmark + tagline 'Know before it renews.' with landing-signup & landing-signin visible; sign-in path shows 'Welcome back' (no full-name field, has Forgot password) and auth-submit routes directly to /home; auth-switch correctly toggles between signup (3 fields, 'Create your account') and signin (2 fields, 'Welcome back'); auth-google in signup mode navigates to /onboarding, and signin flow (validated end-to-end) navigates to /home; typing into auth-email/auth-password inputs works; /home shows home-brand (BrandMark + Renewly wordmark) and 'Hi Saswat' greeting with savings-card intact; Settings sign-out row navigates to landing '/' and brand-mark + 'Renewly v1.0' footer are visible; dark mode set via theme-dark persists and Landing/Auth screens render in dark palette after sign-out (verified by screenshot); onboarding 3 frames advance via onboarding-cta-0/1/2 and final CTA lands on /home (skip button also present on final frame). No backend testing performed (per request — no backend exists).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "shadow* style props (global)", "issue": "Console warning: '\"shadow*\" style props are deprecated. Use \"boxShadow\".' emitted by react-native-web. Non-blocking but should be migrated. Sources: /app/frontend/src/theme.ts (shadow constant) and inline shadowOpacity overrides in /app/frontend/src/components.tsx (BrandMark, addBtn), /app/frontend/app/auth.tsx (googleBtn), /app/frontend/app/settings.tsx (segment, group)."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_4.json"],
+  "action_items": [
+    "OPTIONAL cleanup: migrate 'shadow*' RN style props to 'boxShadow' or move to StyleSheet-only usage to silence the deprecation warning on react-native-web. Not blocking."
+  ],
+  "critical_code_review_comments": [
+    "auth.tsx uses router.replace() on submit which is correct for auth screens (prevents back-nav into /auth). Good.",
+    "Landing signin Pressable also wraps a Text that says 'Sign in' — no separate testID clash, but Playwright strict-mode resolved 2 elements for the testID selector on one run because inner Text nodes inherit accessibility children. Consider adding testID only on the outermost Pressable (already the case) — this is a Playwright/react-native-web quirk, not a bug.",
+    "onboarding-cta testID is dynamic (onboarding-cta-{i}) — good for granular test assertions.",
+    "Mock auth allows empty submissions — this is intentional per spec (agent-to-agent note)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Renewly is a static Expo prototype (NO backend). All 9 flows in iteration 4 request verified passing. Landing/auth/onboarding/home/settings/sign-out/dark-mode all work as designed. Only non-blocking finding is the RN 'shadow*' → 'boxShadow' deprecation warning from react-native-web. Do not re-test dark mode, swipe actions, savings tracker, or family split (already covered in iterations ≤3)."
+}

@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Palette, S, R, shadow } from '@/src/theme';
 import { useTheme } from '@/src/store';
-import { PrimaryBtn, TopBar } from '@/src/components';
+import { PrimaryBtn, TopBar, BrandMark } from '@/src/components';
 
 const BENEFITS = [
   'Unlimited subscriptions (free plan: 5)',
@@ -28,7 +28,7 @@ export default function Paywall() {
       <ScrollView contentContainerStyle={{ padding: S.pad, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         <View style={styles.heroWrap}>
           <View style={styles.heroCircle}>
-            <Ionicons name="refresh-circle" size={64} color={C.teal} />
+            <BrandMark size={56} />
           </View>
         </View>
 

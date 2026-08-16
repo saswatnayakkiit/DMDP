@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Palette, S, R, shadow, inr } from '@/src/theme';
 import { SUBS, TOTAL_LAST_MONTH } from '@/src/data';
 import { useApp, useTheme } from '@/src/store';
-import { BottomNav, Chip, SwipeableSubRow, Card } from '@/src/components';
+import { BottomNav, Chip, SwipeableSubRow, Card, BrandMark } from '@/src/components';
 
 export default function Home() {
   const router = useRouter();
@@ -21,9 +21,13 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.hi}>Hi Saswat</Text>
+        <View style={styles.brandRow} testID="home-brand">
+          <BrandMark size={28} />
+          <Text style={styles.brandTxt}>Renewly</Text>
+        </View>
         <Text style={styles.month}>September 2026</Text>
       </View>
+      <Text style={styles.hi}>Hi Saswat</Text>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: S.pad, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
         <Card testID="hero-total">
@@ -92,7 +96,9 @@ const makeStyles = (C: Palette) => StyleSheet.create({
     paddingHorizontal: S.pad, paddingTop: 4, paddingBottom: 4,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  hi: { color: C.sub, fontSize: 12 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  brandTxt: { color: C.text, fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  hi: { color: C.sub, fontSize: 12, paddingHorizontal: S.pad, marginTop: 2 },
   month: { color: C.sub, fontSize: 12, fontWeight: '600' },
   totalCap: { color: C.sub, fontSize: 12 },
   totalNum: { color: C.text, fontSize: 32, fontWeight: '800', marginTop: 4 },

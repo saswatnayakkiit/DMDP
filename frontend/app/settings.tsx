@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Palette, S, R } from '@/src/theme';
 import { useApp, useTheme, ThemeMode } from '@/src/store';
-import { BottomNav, TopBar } from '@/src/components';
+import { BottomNav, TopBar, BrandMark } from '@/src/components';
 
 const MODES: { key: ThemeMode; label: string; icon: 'sunny' | 'moon' | 'phone-portrait-outline' }[] = [
   { key: 'light', label: 'Light', icon: 'sunny' },
@@ -78,7 +78,17 @@ export default function Settings() {
           <Ionicons name="chevron-forward" size={20} color={C.teal} />
         </Pressable>
 
-        <View style={{ marginTop: 32, alignItems: 'center' }}>
+        <Pressable
+          testID="sign-out"
+          onPress={() => { Haptics.selectionAsync(); router.replace('/' as any); }}
+          style={styles.signOut}
+        >
+          <Ionicons name="log-out-outline" size={18} color={C.red} />
+          <Text style={{ color: C.red, fontSize: 15, fontWeight: '600' }}>Sign out</Text>
+        </Pressable>
+
+        <View style={{ marginTop: 28, alignItems: 'center', gap: 8 }}>
+          <BrandMark size={32} />
           <Text style={{ color: C.sub, fontSize: 12 }}>Renewly v1.0 · Know before it renews.</Text>
         </View>
       </ScrollView>
@@ -137,4 +147,9 @@ const makeStyles = (C: Palette) => StyleSheet.create({
   plusSub: { color: C.sub, fontSize: 12, marginTop: 2 },
   badge: { backgroundColor: C.teal, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   badgeTxt: { color: C.onTeal, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  signOut: {
+    marginTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: C.card, borderRadius: R.card, paddingVertical: 14,
+    borderWidth: 1, borderColor: C.cardBorder,
+  },
 });

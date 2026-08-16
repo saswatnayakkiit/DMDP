@@ -13,6 +13,24 @@ function useStyles() {
   return useMemo(() => makeStyles(C), [C]);
 }
 
+/* ---------- Brand mark (Renewly logo) ---------- */
+export function BrandMark({ size = 40 }: { size?: number }) {
+  const { C } = useTheme();
+  return (
+    <View
+      testID="brand-mark"
+      style={{
+        width: size, height: size, borderRadius: size * 0.28, backgroundColor: C.teal,
+        alignItems: 'center', justifyContent: 'center',
+        ...shadow, shadowOpacity: 0.12,
+      }}
+    >
+      <Text style={{ color: C.onTeal, fontWeight: '800', fontSize: size * 0.5, marginTop: -size * 0.02 }}>R</Text>
+      <View style={{ position: 'absolute', top: size * 0.13, right: size * 0.13, width: size * 0.16, height: size * 0.16, borderRadius: size * 0.08, backgroundColor: C.amber }} />
+    </View>
+  );
+}
+
 /* ---------- Service logo tile ---------- */
 export function Logo({ letter, color, size = 44, dashed }: { letter: string; color: string; size?: number; dashed?: boolean }) {
   const { C } = useTheme();

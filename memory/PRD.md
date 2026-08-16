@@ -36,8 +36,14 @@ Clickable high-fidelity prototype for an Android app "Renewly", a UPI-first subs
 - **Family sharing**: Netflix detail has live "Family split · 3 ways" card — You ₹217, Sristhi ₹216 (seeded paid), Rahul ₹216; per-member Mark paid toggle; settle summary strip ("₹X of ₹432 collected" / "All settled for September").
 - Detail screen is now state-aware: cancelled (red strip + Restore button) / snoozed (amber strip) / active.
 
+## Branding & auth flow (2026-06, session 2 cont.)
+- New entry flow: `/` landing (BrandMark logo + "Renewly" wordmark + tagline "Know before it renews." + Create account / Sign in) → `/auth` (MOCK email/password + Continue with Google; signup → `/onboarding`, signin → `/home`; mode toggle in-screen). Onboarding frames moved from index to `/onboarding`.
+- `BrandMark` component (teal rounded square, white R, amber dot) in src/components.tsx; used on landing, auth, Home header (logo + wordmark), Settings footer, Paywall hero.
+- Settings gained a Sign out row → back to landing.
+- Auth is intentionally mock: no validation/accounts; buttons just navigate.
+
 ## Status
-All 4 new features verified by testing agent (iteration 3, 9/9 pass). Base 8 screens verified in iteration 2.
+All 4 new features verified by testing agent (iteration 3, 9/9 pass). Branding/auth flow verified in iteration 4 (9/9 pass). Base 8 screens verified in iteration 2.
 
 ## Backlog
 - P2: Migrate shadow* props to boxShadow (RN web warning, non-blocking).
