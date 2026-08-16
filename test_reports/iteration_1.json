@@ -1,0 +1,33 @@
+{
+  "summary": "Onboarding blocks all downstream testing. Only frame 0 renders and the Next button (onboarding-cta-0) does not advance to frame 1. FlatList.scrollToIndex + onMomentumScrollEnd does not fire on web preview, so state `i` never increments and neither the last-frame skip link nor navigation to /home is ever reachable. Home / Calendar / Add / Detail / Alerts / Settings / Paywall could not be verified.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "app/index.tsx Onboarding", "issue": "Tapping Next (onboarding-cta-0) does not advance to next frame in Expo web preview. FlatList.scrollToIndex is a no-op on web / onMomentumScrollEnd does not fire, so index state `i` stays at 0. Blocks entire app.", "testID": "onboarding-cta-0", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [
+      {"flow": "Onboarding -> Home", "issue": "Cannot reach /home from onboarding because Next never advances index, so cta-2 / onboarding-skip are never rendered and goHome() is never called.", "affected_testIDs": ["onboarding-cta-0","onboarding-cta-1","onboarding-cta-2","onboarding-skip"]}
+    ],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "FlatList (horizontal, pagingEnabled)", "issue": "Also emits react-native-web deprecation warning: shadow* props deprecated -> use boxShadow (informational only)."}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "In /app/frontend/app/index.tsx Onboarding.next(): update index state directly (setI(i+1)) AND call scrollToIndex, instead of relying on onMomentumScrollEnd. On web scrollToIndex often does not trigger momentum end.",
+    "Alternative: replace FlatList paging with a controlled ScrollView, or gate the CTA/skip on `i === FRAMES.length - 1` using a state that updates on button press.",
+    "After fix, re-run full flow: onboarding -> home (hero total 3,847 / 3,228, chips, sub-rows, see-all) -> detail Netflix (how-to-cancel sheet, open-netflix, mark-cancelled) -> calendar (cal-day-19 sheet 19 Sep · 649) -> add (add-tile-spotify -> field-method, toggle-shared, save-sub) -> alerts (alert-hotstar/netflix/overlap, insight-strip) -> settings (renewly-plus) -> paywall (plan-monthly/yearly, start-trial). Also re-run blue-color scan."
+  ],
+  "critical_code_review_comments": [
+    "Onboarding relies on onMomentumScrollEnd for index state which is unreliable on react-native-web -> should setI on press.",
+    "shadow* style props should migrate to boxShadow to silence deprecation warnings (non-blocking)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "~5% (only onboarding frame 0 verified to render)"},
+  "seed_data_creation": "none",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Onboarding index does not advance on web. Once main agent fixes setI in next(), re-run the full playbook above. All testIDs listed in review_request should be verified. Fixed 'today' is 2026-09-16 for daysUntil.",
+  "rca_of_issue": "Onboarding.next() calls FlatList.scrollToIndex and expects onMomentumScrollEnd to update `i`. In react-native-web, programmatic scrollToIndex on a horizontal pagingEnabled FlatList does not reliably fire momentum end, so `i` remains 0, the rendered PrimaryBtn stays testID='onboarding-cta-0' with label 'Next', and the last-frame Skip link + goHome() are never rendered. Fix: call setI(next) inside next() before/along with scrollToIndex."
+}

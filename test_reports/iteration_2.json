@@ -1,0 +1,32 @@
+{
+  "summary": "Onboarding fix VERIFIED. Frame 0 → 1 → 2 advances correctly on web; cta-2 label 'Allow SMS access' and onboarding-skip both navigate to /home. All 8 screens + 2 bottom sheets reachable. Home hero-total ₹3,847 vs ₹3,228, chip-unused & chip-price both → /alerts, sub-row-netflix/spotify/cultfit render, see-all → /calendar. Detail (Netflix) shows all required strings incl. Sristhi & price-increase chip; how-to-cancel sheet has open-netflix + mark-cancelled. Calendar Sep 2026, cal-day-19 opens sheet with Netflix ₹649, summary line present. Add tiles → add-details?id=spotify with ₹119, save-sub → /home. Alerts shows all 3 alert cards + insight-strip '₹3,588 a year'. Settings row-sms + renewly-plus → /paywall (Renewly Plus, plan-monthly, plan-yearly, start-trial). Blue color scan: 0 blue elements on home or paywall. HOWEVER: widespread literal '\\uXXXX' escape sequences render as text across many screens (Calendar, Detail, Alerts, Settings, Add, Paywall). Also 'See all 8 \\u2192' on Home (fixed by me).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Multiple screens (Calendar/Detail/Alerts/Settings/Add/Paywall)", "issue": "Literal unicode escapes '\\u00B7', '\\u2192', '\\u20B9', '\\u203A', '\\u2026', '\\u2248' render as raw text in JSX (e.g. '19 Sep \\u00B7 ₹649', 'Netflix went up \\u20B9150 since June', 'Open Netflix \\u203A Account', '\\u20B9599 / year', 'save 50% \\u00B7 \\u2248 \\u20B950/mo', 'Search Netflix, Jio, gym\\u2026', 'Renewly v1.0 \\u00B7 Know before it renews.'). JSX text children do NOT interpret backslash-u escapes; must use the actual Unicode character or interpolate a string literal.", "testID": "n/a", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "All", "issues": ["Widespread \\uXXXX literals visible to users – hurts polish; no blue detected; teal dominant; amber only on unused/price-change/insight-strip; no gradients observed."]}
+    ],
+    "react_native_issues": [
+      {"component": "StyleSheet shadow* props", "issue": "Deprecation warning: 'shadow*' style props are deprecated. Use 'boxShadow'. Informational; migrate for future RN Web compatibility."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json"],
+  "action_items": [
+    "Replace all literal '\\u00B7' with '·', '\\u2192' with '→', '\\u20B9' with '₹', '\\u203A' with '›', '\\u2026' with '…', '\\u2248' with '≈' in JSX text content across: /app/frontend/app/calendar.tsx (lines 101,121,125), /app/frontend/app/detail.tsx (lines 36, 52, 102), /app/frontend/app/alerts.tsx (lines 28, 46, 47), /app/frontend/app/settings.tsx (line 52), /app/frontend/app/add.tsx (line 36 placeholder – note: placeholder prop DOES interpret escapes in JS string, but check), /app/frontend/app/paywall.tsx (lines 50, 57, 58). Alternatively wrap in template literals or use direct unicode chars.",
+    "Optional: migrate shadow* props to boxShadow to silence RN Web deprecation warning."
+  ],
+  "critical_code_review_comments": [
+    "Backslash-u escapes only work inside JS string literals, not in JSX text children. Author likely copy-pasted escape sequences from a spec. Fix by using actual characters or JS strings: {'19 Sep \\u00B7 ₹649'} works, but '19 Sep \\u00B7 ₹649' as bare JSX text does not.",
+    "Onboarding fix (setI + scrollToIndex) works reliably on RN Web – good pattern."
+  ],
+  "updated_files": ["/app/frontend/app/home.tsx (fixed 'See all 8 →')"],
+  "success_rate": {"backend": "N/A", "frontend": "~92% (all flows and testIDs pass; unicode escape rendering is the only functional/text defect)"},
+  "seed_data_creation": "none",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Onboarding advancement now works. Only remaining issue is the widespread literal \\uXXXX text across Calendar/Detail/Alerts/Settings/Paywall/Add. After main agent replaces escapes with real chars (or wraps in {'...'} JS strings), retest text on: /calendar (day sheet + summary), /detail?id=netflix (status strip, cancel steps), /alerts (Hotstar sub, Netflix went up, ₹499 → ₹649 line), /paywall (₹99/month, ₹599/year, save 50% · ≈ ₹50/mo), /settings (footer), /add (search placeholder). Fixed 'today' = 2026-09-16.",
+  "rca_of_issue": "Root cause: In React (and react-native-web), backslash-u escape sequences are ONLY interpreted inside JavaScript string literals ('like \\u00B7'), not when placed as raw JSX text children between tags. Example: <Text>19 Sep \\u00B7 ₹649</Text> renders the literal 8 characters '\\u00B7'. Fix: use the real character (<Text>19 Sep · ₹649</Text>) or interpolate a JS string (<Text>{`19 Sep \\u00B7 ₹649`}</Text>)."
+}
