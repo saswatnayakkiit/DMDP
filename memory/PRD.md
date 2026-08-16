@@ -29,10 +29,17 @@ Clickable high-fidelity prototype for an Android app "Renewly", a UPI-first subs
 - Paywall: benefits, monthly/yearly segmented toggle, Start 7-day free trial.
 - Bottom nav (5 items, raised + button) on all main screens.
 
+## Feature update (2026-06, session 2)
+- **Dark mode**: Light/Dark/System segmented control in Settings (default Light, persisted via AsyncStorage key `renewly:mode`). Calm teal-tinted dark palette (`DARK` in src/theme.ts). All screens use `useTheme()` from `src/store.tsx` + `makeStyles(C)` pattern; themed StatusBar in _layout.
+- **Swipe actions**: `SwipeableSubRow` (ReanimatedSwipeable) on Home "Next up" and Calendar "Upcoming renewals" — swipe left reveals Snooze (amber, toggles "Snoozed" pill) and Cancelled (red, removes from lists + feeds savings). Haptics on both.
+- **Savings tracker**: `AppProvider` in src/store.tsx tracks statuses; seeded cancelled subs (Sony LIV ₹299 since 14 Jun, Gaana ₹99 since 2 Aug = ₹996). Home savings card → /savings screen (hero total, yearly projection, per-sub saved amounts, restore for user-cancelled). Cancelling a Sep sub also reduces Home hero total.
+- **Family sharing**: Netflix detail has live "Family split · 3 ways" card — You ₹217, Sristhi ₹216 (seeded paid), Rahul ₹216; per-member Mark paid toggle; settle summary strip ("₹X of ₹432 collected" / "All settled for September").
+- Detail screen is now state-aware: cancelled (red strip + Restore button) / snoozed (amber strip) / active.
+
 ## Status
-All 8 screens + 2 bottom sheets verified by testing agent (iteration 2). Onboarding advance bug and unicode-escape rendering bug fixed.
+All 4 new features verified by testing agent (iteration 3, 9/9 pass). Base 8 screens verified in iteration 2.
 
 ## Backlog
-- P2: Optional dark mode.
 - P2: Migrate shadow* props to boxShadow (RN web warning, non-blocking).
-- P2: Real swipe-to-dismiss / cancel gestures on alert cards.
+- P3: Per-sub charge history (currently Netflix figures shown for every sub — prototype).
+- Testing note: to swipe ReanimatedSwipeable on web, dispatch PointerEvent with pointerType 'touch' (see iteration_3 script); mouse drag is treated as tap.

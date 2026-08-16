@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { C, R, S, shadow, inr, daysUntil } from './theme';
+import ReanimatedSwipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { Palette, R, S, shadow, inr, daysUntil } from './theme';
 import { Sub } from './data';
+import { useApp, useTheme } from './store';
+
+function useStyles() {
+  const { C } = useTheme();
+  return useMemo(() => makeStyles(C), [C]);
+}
 
 /* ---------- Service logo tile ---------- */
 export function Logo({ letter, color, size = 44, dashed }: { letter: string; color: string; size?: number; dashed?: boolean }) {
+  const { C } = useTheme();
   const isCustom = dashed;
   return (
     <View
@@ -40,6 +48,8 @@ export function Logo({ letter, color, size = 44, dashed }: { letter: string; col
 
 /* ---------- Chip ---------- */
 export function Chip({ label, tone = 'teal', testID }: { label: string; tone?: 'teal' | 'amber'; testID?: string }) {
+  const { C } = useTheme();
+  const styles = useStyles();
   const color = tone === 'amber' ? C.amber : C.teal;
   return (
     <View testID={testID} style={[styles.chip, { borderColor: color }]}>
@@ -50,18 +60,22 @@ export function Chip({ label, tone = 'teal', testID }: { label: string; tone?: '
 
 /* ---------- Buttons ---------- */
 export function PrimaryBtn({ label, onPress, testID, style }: { label: string; onPress?: () => void; testID?: string; style?: StyleProp<ViewStyle> }) {
+  const { C } = useTheme();
+  const styles = useStyles();
   return (
     <Pressable
       testID={testID}
       onPress={() => { Haptics.selectionAsync(); onPress?.(); }}
       style={({ pressed }) => [styles.btn, { backgroundColor: C.teal, opacity: pressed ? 0.85 : 1 }, style]}
     >
-      <Text style={{ color: '#fff', fontSize: 15, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ color: C.onTeal, fontSize: 15, fontWeight: '700' }}>{label}</Text>
     </Pressable>
   );
 }
 
 export function SecondaryBtn({ label, onPress, testID, style, tone = 'teal' }: { label: string; onPress?: () => void; testID?: string; style?: StyleProp<ViewStyle>; tone?: 'teal' | 'red' }) {
+  const { C } = useTheme();
+  const styles = useStyles();
   const c = tone === 'red' ? C.red : C.teal;
   return (
     <Pressable
@@ -76,6 +90,10 @@ export function SecondaryBtn({ label, onPress, testID, style, tone = 'teal' }: {
 
 /* ---------- Subscription row ---------- */
 export function SubRow({ sub, onPress, subtitleOverride, testID }: { sub: Sub; onPress?: () => void; subtitleOverride?: string; testID?: string }) {
+  const { C } = useTheme();
+  const styles = useStyles();
+  const { statuses } = useApp();
+  const snoozed = statuses[sub.id]?.state === 'snoozed';
   const d = daysUntil(sub.renewDate);
   const inTxt = d <= 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`;
   const subtitle = subtitleOverride ?? `${inTxt} · ${sub.method}`;
@@ -87,7 +105,15 @@ export function SubRow({ sub, onPress, subtitleOverride, testID }: { sub: Sub; o
     >
       <Logo letter={sub.logo} color={sub.color} />
       <View style={{ flex: 1, marginLeft: 12 }}>
-        <Text style={styles.subName} numberOfLines={1}>{sub.name}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={styles.subName} numberOfLines={1}>{sub.name}</Text>
+          {snoozed && (
+            <View style={styles.snoozePill} testID={`snoozed-pill-${sub.id}`}>
+              <Ionicons name="alarm" size={10} color={C.amber} />
+              <Text style={{ color: C.amber, fontSize: 10, fontWeight: '700' }}>Snoozed</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.subMeta} numberOfLines={1}>{subtitle}</Text>
       </View>
       <Text style={styles.subAmt}>{inr(sub.amount)}</Text>
@@ -96,10 +122,57 @@ export function SubRow({ sub, onPress, subtitleOverride, testID }: { sub: Sub; o
   );
 }
 
+/* ---------- Swipeable subscription row (swipe left: Snooze / Cancelled) ---------- */
+export function SwipeableSubRow({ sub, onPress, subtitleOverride }: { sub: Sub; onPress?: () => void; subtitleOverride?: string }) {
+  const { C } = useTheme();
+  const styles = useStyles();
+  const { statuses, snoozeToggle, cancelSub } = useApp();
+  const snoozed = statuses[sub.id]?.state === 'snoozed';
+  const ref = useRef<SwipeableMethods>(null);
+
+  const onSnooze = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    ref.current?.close();
+    snoozeToggle(sub.id);
+  };
+  const onCancel = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    ref.current?.close();
+    cancelSub(sub.id);
+  };
+
+  const renderRightActions = () => (
+    <View style={styles.swipeActions}>
+      <Pressable testID={`swipe-snooze-${sub.id}`} onPress={onSnooze} style={[styles.swipeBtn, { backgroundColor: C.amber, borderTopLeftRadius: R.card, borderBottomLeftRadius: R.card }]}>
+        <Ionicons name="alarm" size={20} color="#fff" />
+        <Text style={styles.swipeTxt}>{snoozed ? 'Unsnooze' : 'Snooze'}</Text>
+      </Pressable>
+      <Pressable testID={`swipe-cancel-${sub.id}`} onPress={onCancel} style={[styles.swipeBtn, { backgroundColor: C.red, borderTopRightRadius: R.card, borderBottomRightRadius: R.card }]}>
+        <Ionicons name="close-circle" size={20} color="#fff" />
+        <Text style={styles.swipeTxt}>Cancelled</Text>
+      </Pressable>
+    </View>
+  );
+
+  return (
+    <ReanimatedSwipeable
+      ref={ref}
+      friction={1.6}
+      rightThreshold={32}
+      overshootRight={false}
+      renderRightActions={renderRightActions}
+    >
+      <SubRow sub={sub} onPress={onPress} subtitleOverride={subtitleOverride} />
+    </ReanimatedSwipeable>
+  );
+}
+
 /* ---------- Bottom nav ---------- */
 type NavKey = 'home' | 'calendar' | 'add' | 'alerts' | 'settings';
 
 export function BottomNav({ active }: { active: NavKey }) {
+  const { C } = useTheme();
+  const styles = useStyles();
   const router = useRouter();
   const pathname = usePathname();
   const go = (key: NavKey, route: string) => {
@@ -120,7 +193,7 @@ export function BottomNav({ active }: { active: NavKey }) {
       {item('home', 'home', 'Home', '/home')}
       {item('calendar', 'calendar', 'Calendar', '/calendar')}
       <Pressable testID="nav-add" onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/add' as any); }} style={styles.addBtn} hitSlop={8}>
-        <Ionicons name="add" size={30} color="#fff" />
+        <Ionicons name="add" size={30} color={C.onTeal} />
       </Pressable>
       {item('alerts', 'notifications', 'Alerts', '/alerts')}
       {item('settings', 'settings-outline', 'Settings', '/settings')}
@@ -130,6 +203,8 @@ export function BottomNav({ active }: { active: NavKey }) {
 
 /* ---------- Screen header (title + optional back) ---------- */
 export function TopBar({ title, right, onBack, testID }: { title?: string; right?: React.ReactNode; onBack?: () => void; testID?: string }) {
+  const { C } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.topbar} testID={testID}>
       {onBack ? (
@@ -145,10 +220,11 @@ export function TopBar({ title, right, onBack, testID }: { title?: string; right
 
 /* ---------- Card wrapper ---------- */
 export function Card({ children, style, testID }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; testID?: string }) {
+  const styles = useStyles();
   return <View testID={testID} style={[styles.card, style]}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   chip: {
     height: 28,
     borderRadius: R.chip,
@@ -173,11 +249,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: C.card,
     borderRadius: R.card,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
     ...shadow,
   },
-  subName: { color: C.text, fontSize: 15, fontWeight: '700' },
+  subName: { color: C.text, fontSize: 15, fontWeight: '700', flexShrink: 1 },
   subMeta: { color: C.sub, fontSize: 12, marginTop: 2 },
   subAmt: { color: C.text, fontSize: 15, fontWeight: '800' },
+  snoozePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: C.amberTint, borderRadius: R.chip, paddingHorizontal: 6, paddingVertical: 2,
+  },
+  swipeActions: { flexDirection: 'row', marginLeft: 8 },
+  swipeBtn: { width: 76, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  swipeTxt: { color: '#fff', fontSize: 11, fontWeight: '700' },
   nav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -204,6 +289,8 @@ const styles = StyleSheet.create({
     backgroundColor: C.card,
     borderRadius: R.card,
     padding: S.pad,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
     ...shadow,
   },
 });

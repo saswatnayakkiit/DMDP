@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { C, S, R } from '@/src/theme';
+import { Palette, S, R, shadow } from '@/src/theme';
+import { useTheme } from '@/src/store';
 import { PrimaryBtn, TopBar } from '@/src/components';
 
 const BENEFITS = [
@@ -16,6 +17,8 @@ const BENEFITS = [
 
 export default function Paywall() {
   const router = useRouter();
+  const { C } = useTheme();
+  const styles = useMemo(() => makeStyles(C), [C]);
   const [plan, setPlan] = useState<'m' | 'y'>('y');
 
   return (
@@ -35,7 +38,7 @@ export default function Paywall() {
         <View style={styles.benefits}>
           {BENEFITS.map((b, i) => (
             <View key={i} style={styles.benefitRow}>
-              <View style={styles.check}><Ionicons name="checkmark" size={14} color="#fff" /></View>
+              <View style={styles.check}><Ionicons name="checkmark" size={14} color={C.onTeal} /></View>
               <Text style={styles.benefitTxt}>{b}</Text>
             </View>
           ))}
@@ -55,7 +58,7 @@ export default function Paywall() {
             style={[styles.segItem, plan === 'y' && styles.segItemActive]}
           >
             <Text style={[styles.segTxt, plan === 'y' && styles.segTxtActive]}>₹599 / year</Text>
-            <Text style={[styles.segCap, plan === 'y' && { color: '#fff' }]}>save 50% · ≈ ₹50/mo</Text>
+            <Text style={[styles.segCap, plan === 'y' && { color: C.onTeal }]}>save 50% · ≈ ₹50/mo</Text>
           </Pressable>
         </View>
 
@@ -69,7 +72,7 @@ export default function Paywall() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   heroWrap: { alignItems: 'center', marginTop: 8 },
   heroCircle: {
@@ -85,12 +88,13 @@ const styles = StyleSheet.create({
   segment: {
     flexDirection: 'row', marginTop: 28, borderRadius: R.card, backgroundColor: C.card,
     padding: 4, gap: 4,
-    shadowColor: '#0F172A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
+    borderWidth: 1, borderColor: C.cardBorder,
+    ...shadow, shadowOpacity: 0.05,
   },
   segItem: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   segItemActive: { backgroundColor: C.teal },
   segTxt: { color: C.text, fontSize: 14, fontWeight: '700' },
-  segTxtActive: { color: '#fff' },
+  segTxtActive: { color: C.onTeal },
   segCap: { color: C.sub, fontSize: 11, marginTop: 2 },
   footer: { color: C.sub, fontSize: 12, textAlign: 'center', marginTop: 16, lineHeight: 18 },
 });

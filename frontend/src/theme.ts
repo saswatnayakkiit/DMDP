@@ -1,4 +1,4 @@
-export const C = {
+export const LIGHT = {
   teal: '#0F766E',
   tealTint: '#E6F4F2',
   amber: '#F59E0B',
@@ -8,8 +8,33 @@ export const C = {
   text: '#1E293B',
   sub: '#64748B',
   red: '#DC2626',
+  redTint: '#FEE2E2',
   border: '#E2E8F0',
   divider: '#EEF2F6',
+  cardBorder: 'transparent',
+  onTeal: '#FFFFFF',
+  backdrop: 'rgba(15,23,42,0.35)',
+};
+
+export type Palette = typeof LIGHT;
+
+// Calm, teal-tinted dark theme — easy on the eyes at night. No blue.
+export const DARK: Palette = {
+  teal: '#2DD4BF',
+  tealTint: '#11332F',
+  amber: '#FBBF24',
+  amberTint: '#33290F',
+  bg: '#0B1414',
+  card: '#142322',
+  text: '#E8F0EE',
+  sub: '#8FA6A2',
+  red: '#F87171',
+  redTint: '#3A1D1D',
+  border: '#2A3B39',
+  divider: '#1F302E',
+  cardBorder: '#20312F',
+  onTeal: '#04201D',
+  backdrop: 'rgba(0,0,0,0.55)',
 };
 
 export const R = { card: 12, chip: 999, tile: 16 };

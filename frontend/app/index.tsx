@@ -1,16 +1,17 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, useWindowDimensions, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { C, S } from '@/src/theme';
+import { Palette, S } from '@/src/theme';
+import { useTheme } from '@/src/store';
 import { PrimaryBtn } from '@/src/components';
 
 const FRAMES = [
   {
     key: 'f1',
-    accent: C.teal,
+    accent: 'teal' as const,
     icon: 'wallet' as const,
     headline: 'Subscriptions add up quietly.',
     sub: 'The average person has 8 recurring payments and forgets at least 2 of them.',
@@ -18,7 +19,7 @@ const FRAMES = [
   },
   {
     key: 'f2',
-    accent: C.amber,
+    accent: 'amber' as const,
     icon: 'calendar' as const,
     headline: 'Renewly tells you before it renews.',
     sub: 'See every Autopay, card mandate and app subscription in one calendar.',
@@ -26,7 +27,7 @@ const FRAMES = [
   },
   {
     key: 'f3',
-    accent: C.teal,
+    accent: 'teal' as const,
     icon: 'shield-checkmark' as const,
     headline: 'Let us do the finding.',
     sub: "Allow SMS access to auto-detect debits, or add them yourself in 30 seconds.",
@@ -36,6 +37,8 @@ const FRAMES = [
 
 export default function Onboarding() {
   const router = useRouter();
+  const { C } = useTheme();
+  const styles = useMemo(() => makeStyles(C), [C]);
   const { width } = useWindowDimensions();
   const [i, setI] = useState(0);
   const ref = useRef<FlatList>(null);
@@ -63,19 +66,22 @@ export default function Onboarding() {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(it) => it.key}
         onMomentumScrollEnd={(e) => setI(Math.round(e.nativeEvent.contentOffset.x / width))}
-        renderItem={({ item }) => (
-          <View style={{ width, paddingHorizontal: S.pad }}>
-            <View style={styles.illWrap}>
-              <View style={[styles.illCircle, { backgroundColor: item.accent + '22' }]}>
-                <Ionicons name={item.icon} size={72} color={item.accent} />
+        renderItem={({ item }) => {
+          const accent = item.accent === 'amber' ? C.amber : C.teal;
+          return (
+            <View style={{ width, paddingHorizontal: S.pad }}>
+              <View style={styles.illWrap}>
+                <View style={[styles.illCircle, { backgroundColor: accent + '22' }]}>
+                  <Ionicons name={item.icon} size={72} color={accent} />
+                </View>
+                <View style={[styles.blob, { backgroundColor: C.amber + '33', top: 20, left: 30 }]} />
+                <View style={[styles.blob, { backgroundColor: C.teal + '33', bottom: 30, right: 20, width: 40, height: 40 }]} />
               </View>
-              <View style={[styles.blob, { backgroundColor: C.amber + '33', top: 20, left: 30 }]} />
-              <View style={[styles.blob, { backgroundColor: C.teal + '33', bottom: 30, right: 20, width: 40, height: 40 }]} />
+              <Text style={styles.h1}>{item.headline}</Text>
+              <Text style={styles.sub}>{item.sub}</Text>
             </View>
-            <Text style={styles.h1}>{item.headline}</Text>
-            <Text style={styles.sub}>{item.sub}</Text>
-          </View>
-        )}
+          );
+        }}
       />
 
       <View style={styles.dots}>
@@ -96,7 +102,7 @@ export default function Onboarding() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   illWrap: { height: 260, alignItems: 'center', justifyContent: 'center', marginTop: 24 },
   illCircle: { width: 160, height: 160, borderRadius: 80, alignItems: 'center', justifyContent: 'center' },

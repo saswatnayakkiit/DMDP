@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { C, S, R, inr } from '@/src/theme';
+import { Palette, S, R, inr } from '@/src/theme';
+import { useTheme } from '@/src/store';
 import { BottomNav, Logo, Card, SecondaryBtn, TopBar } from '@/src/components';
 
 export default function Alerts() {
   const router = useRouter();
+  const { C } = useTheme();
+  const styles = useMemo(() => makeStyles(C), [C]);
 
   const openDetail = (id: string) => {
     Haptics.selectionAsync();
@@ -79,7 +82,7 @@ export default function Alerts() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   cardTitle: { color: C.text, fontSize: 15, fontWeight: '700' },

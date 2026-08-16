@@ -1,3 +1,5 @@
+export type Member = { id: string; name: string; share: number };
+
 export type Sub = {
   id: string;
   name: string;
@@ -7,7 +9,7 @@ export type Sub = {
   renewDate: string; // ISO
   method: 'UPI Autopay' | 'Card' | 'Play Store' | 'Net banking';
   methodDetail?: string;
-  shared?: { with: string; splitWays: number; yourShare: number };
+  shared?: { splitWays: number; yourShare: number; members: Member[] };
   priceChange?: { from: number; to: number; when: string };
   unusedDays?: number;
   logo: string;
@@ -15,7 +17,7 @@ export type Sub = {
 };
 
 export const SUBS: Sub[] = [
-  { id: 'netflix', name: 'Netflix Premium', short: 'Netflix', amount: 649, cycle: 'Monthly', renewDate: '2026-09-19', method: 'UPI Autopay', methodDetail: 'HDFC \u2022\u20224421', shared: { with: 'Sristhi', splitWays: 2, yourShare: 324 }, priceChange: { from: 499, to: 649, when: 'June' }, logo: 'N', color: '#E50914' },
+  { id: 'netflix', name: 'Netflix Premium', short: 'Netflix', amount: 649, cycle: 'Monthly', renewDate: '2026-09-19', method: 'UPI Autopay', methodDetail: 'HDFC ••4421', shared: { splitWays: 3, yourShare: 217, members: [{ id: 'sristhi', name: 'Sristhi', share: 216 }, { id: 'rahul', name: 'Rahul', share: 216 }] }, priceChange: { from: 499, to: 649, when: 'June' }, logo: 'N', color: '#E50914' },
   { id: 'spotify', name: 'Spotify', short: 'Spotify', amount: 119, cycle: 'Monthly', renewDate: '2026-09-21', method: 'Card', logo: 'S', color: '#1DB954' },
   { id: 'cultfit', name: 'Cult.fit', short: 'Cult.fit', amount: 1499, cycle: 'Monthly', renewDate: '2026-09-28', method: 'UPI Autopay', priceChange: { from: 1299, to: 1499, when: 'last month' }, logo: 'C', color: '#DC2626' },
   { id: 'hotstar', name: 'Hotstar', short: 'Hotstar', amount: 299, cycle: 'Monthly', renewDate: '2026-10-03', method: 'UPI Autopay', unusedDays: 34, logo: 'H', color: '#1E293B' },
@@ -23,6 +25,14 @@ export const SUBS: Sub[] = [
   { id: 'icloud', name: 'iCloud+', short: 'iCloud', amount: 75, cycle: 'Monthly', renewDate: '2026-10-12', method: 'Card', logo: 'i', color: '#94A3B8' },
   { id: 'jio', name: 'Jio Postpaid', short: 'Jio', amount: 399, cycle: 'Monthly', renewDate: '2026-10-15', method: 'UPI Autopay', logo: 'J', color: '#7C2D12' },
   { id: 'chatgpt', name: 'ChatGPT Plus', short: 'ChatGPT', amount: 1999, cycle: 'Monthly', renewDate: '2026-10-22', method: 'Card', logo: 'G', color: '#10A37F' },
+];
+
+// Subscriptions cancelled before "today" — seed the savings tracker.
+export type CancelledSeed = { id: string; name: string; amount: number; cancelledOn: string; logo: string; color: string };
+
+export const CANCELLED_SEED: CancelledSeed[] = [
+  { id: 'sonyliv', name: 'Sony LIV', amount: 299, cancelledOn: '2026-06-14', logo: 'S', color: '#334155' },
+  { id: 'gaana', name: 'Gaana Plus', amount: 99, cancelledOn: '2026-08-02', logo: 'G', color: '#B91C1C' },
 ];
 
 export const ADD_GRID = [

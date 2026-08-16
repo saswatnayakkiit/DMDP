@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { C, S, R, inr, shortDate } from '@/src/theme';
-import { SUBS, TOTAL_THIS_MONTH, TOTAL_LAST_MONTH } from '@/src/data';
-import { BottomNav, SubRow } from '@/src/components';
+import { Palette, S, R, inr, shortDate } from '@/src/theme';
+import { SUBS, TOTAL_LAST_MONTH } from '@/src/data';
+import { useApp, useTheme } from '@/src/store';
+import { BottomNav, SubRow, SwipeableSubRow } from '@/src/components';
 
 const TODAY = { y: 2026, m: 8, d: 16 }; // month is 0-indexed: 8 = Sep
 
@@ -25,21 +26,26 @@ function buildGrid() {
   return cells;
 }
 
-const RENEW_DAYS_SEP = [19, 21, 28];
-// Oct renewals shown greyed (only visually in comparison line)
-
 export default function CalendarScreen() {
   const router = useRouter();
+  const { C } = useTheme();
+  const styles = useMemo(() => makeStyles(C), [C]);
+  const { statuses, monthTotal } = useApp();
   const [sheetDay, setSheetDay] = useState<number | null>(null);
   const cells = useMemo(buildGrid, []);
 
+  const activeSubs = SUBS.filter(s => statuses[s.id]?.state !== 'cancelled');
+  const renewDaysSep = activeSubs
+    .filter(s => new Date(s.renewDate).getMonth() === 8)
+    .map(s => new Date(s.renewDate).getDate());
+
   const openDay = (day: number) => {
-    if (!RENEW_DAYS_SEP.includes(day)) return;
+    if (!renewDaysSep.includes(day)) return;
     Haptics.selectionAsync();
     setSheetDay(day);
   };
 
-  const subsForDay = (day: number) => SUBS.filter(s => {
+  const subsForDay = (day: number) => activeSubs.filter(s => {
     const d = new Date(s.renewDate);
     return d.getMonth() === 8 && d.getDate() === day;
   });
@@ -69,7 +75,7 @@ export default function CalendarScreen() {
         <View style={styles.grid}>
           {cells.map((c, idx) => {
             const isToday = c.day === TODAY.d;
-            const hasRenew = c.day != null && RENEW_DAYS_SEP.includes(c.day);
+            const hasRenew = c.day != null && renewDaysSep.includes(c.day);
             const isPast = c.day != null && c.day < TODAY.d;
             return (
               <Pressable
@@ -97,7 +103,7 @@ export default function CalendarScreen() {
 
         <View style={styles.summary}>
           <Text style={styles.summaryTxt}>
-            Total this month <Text style={styles.bold}>{inr(TOTAL_THIS_MONTH)}</Text>
+            Total this month <Text style={styles.bold}>{inr(monthTotal)}</Text>
             <Text style={{ color: C.sub }}> · Last month </Text>
             <Text style={styles.bold}>{inr(TOTAL_LAST_MONTH)}</Text>
           </Text>
@@ -105,8 +111,8 @@ export default function CalendarScreen() {
 
         <Text style={styles.upcoming}>Upcoming renewals</Text>
         <View style={{ gap: S.gap }}>
-          {SUBS.slice(0, 5).map(s => (
-            <SubRow key={s.id} sub={s} onPress={() => router.push({ pathname: '/detail', params: { id: s.id } } as any)} />
+          {activeSubs.slice(0, 5).map(s => (
+            <SwipeableSubRow key={s.id} sub={s} onPress={() => router.push({ pathname: '/detail', params: { id: s.id } } as any)} />
           ))}
         </View>
       </ScrollView>
@@ -132,7 +138,7 @@ export default function CalendarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: S.pad, height: 52 },
   headerTitle: { color: C.text, fontSize: 18, fontWeight: '700' },
@@ -142,11 +148,11 @@ const styles = StyleSheet.create({
   cell: { width: `${100/7}%`, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
   cellTxt: { color: C.text, fontSize: 14, fontWeight: '600' },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.teal, marginTop: 3 },
-  summary: { marginTop: 12, padding: 12, borderRadius: R.card, backgroundColor: '#EEF2F6' },
+  summary: { marginTop: 12, padding: 12, borderRadius: R.card, backgroundColor: C.divider },
   summaryTxt: { color: C.text, fontSize: 13 },
   bold: { fontWeight: '800', color: C.text },
   upcoming: { color: C.text, fontSize: 17, fontWeight: '700', marginTop: 20, marginBottom: 12 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.35)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: C.backdrop, justifyContent: 'flex-end' },
   sheet: { backgroundColor: C.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: S.pad, paddingBottom: 32 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: C.border, alignSelf: 'center', marginBottom: 12 },
   sheetTitle: { color: C.text, fontSize: 18, fontWeight: '700' },

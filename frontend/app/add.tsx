@@ -4,12 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { C, S, R } from '@/src/theme';
+import { Palette, S, R, shadow } from '@/src/theme';
 import { ADD_GRID } from '@/src/data';
+import { useTheme } from '@/src/store';
 import { BottomNav, Logo, TopBar } from '@/src/components';
 
 export default function Add() {
   const router = useRouter();
+  const { C } = useTheme();
+  const styles = useMemo(() => makeStyles(C), [C]);
   const [q, setQ] = useState('');
 
   const tiles = useMemo(() => {
@@ -59,7 +62,7 @@ export default function Add() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   searchBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -71,7 +74,8 @@ const styles = StyleSheet.create({
   tile: {
     width: '31%', aspectRatio: 1, borderRadius: R.card, backgroundColor: C.card,
     alignItems: 'center', justifyContent: 'center', padding: 8, gap: 8,
-    shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+    borderWidth: 1, borderColor: C.cardBorder,
+    ...shadow, shadowOpacity: 0.05,
   },
   tileName: { color: C.text, fontSize: 12, fontWeight: '600', textAlign: 'center' },
 });

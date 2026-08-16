@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Switch, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { C, S, R, inr } from '@/src/theme';
+import { Palette, S, R, inr, shadow } from '@/src/theme';
 import { ADD_GRID } from '@/src/data';
+import { useTheme } from '@/src/store';
 import { PrimaryBtn, Logo, TopBar } from '@/src/components';
 
 const CYCLES = ['Monthly', 'Yearly', 'Weekly'];
@@ -29,6 +30,8 @@ const DEFAULTS: Record<string, { amount: number; date: string }> = {
 
 export default function AddDetails() {
   const router = useRouter();
+  const { C } = useTheme();
+  const styles = useMemo(() => makeStyles(C), [C]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const svc = ADD_GRID.find(t => t.id === id) ?? ADD_GRID[3];
   const def = DEFAULTS[svc.id] ?? { amount: 0, date: '1 Oct 2026' };
@@ -63,10 +66,10 @@ export default function AddDetails() {
             <Text style={styles.svcName}>{svc.name}</Text>
           </View>
 
-          <FieldRow label="Amount" value={amount ? inr(amount) : 'Enter amount'} />
-          <FieldRow label="Billing cycle" value={cycle} chevron onPress={cyc(CYCLES, cycle, setCycle)} />
-          <FieldRow label="Next debit" value={date} chevron />
-          <FieldRow label="Paid via" value={method} chevron onPress={cyc(METHODS, method, setMethod)} testID="field-method" />
+          <FieldRow styles={styles} C={C} label="Amount" value={amount ? inr(amount) : 'Enter amount'} />
+          <FieldRow styles={styles} C={C} label="Billing cycle" value={cycle} chevron onPress={cyc(CYCLES, cycle, setCycle)} />
+          <FieldRow styles={styles} C={C} label="Next debit" value={date} chevron />
+          <FieldRow styles={styles} C={C} label="Paid via" value={method} chevron onPress={cyc(METHODS, method, setMethod)} testID="field-method" />
 
           <View style={styles.toggleRow}>
             <View>
@@ -83,10 +86,10 @@ export default function AddDetails() {
           </View>
 
           {shared && (
-            <FieldRow label="Split between" value={split} chevron onPress={cyc(SPLIT, split, setSplit)} />
+            <FieldRow styles={styles} C={C} label="Split between" value={split} chevron onPress={cyc(SPLIT, split, setSplit)} />
           )}
 
-          <FieldRow label="Remind me" value={remind} chevron onPress={cyc(REMIND, remind, setRemind)} />
+          <FieldRow styles={styles} C={C} label="Remind me" value={remind} chevron onPress={cyc(REMIND, remind, setRemind)} />
         </ScrollView>
 
         <View style={styles.footer}>
@@ -97,7 +100,7 @@ export default function AddDetails() {
   );
 }
 
-function FieldRow({ label, value, chevron, onPress, testID }: { label: string; value: string; chevron?: boolean; onPress?: () => void; testID?: string }) {
+function FieldRow({ label, value, chevron, onPress, testID, styles, C }: { label: string; value: string; chevron?: boolean; onPress?: () => void; testID?: string; styles: any; C: Palette }) {
   const Comp: any = onPress ? Pressable : View;
   return (
     <Comp testID={testID} onPress={onPress} style={styles.field}>
@@ -110,13 +113,14 @@ function FieldRow({ label, value, chevron, onPress, testID }: { label: string; v
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   svcHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
   svcName: { color: C.text, fontSize: 22, fontWeight: '800' },
   field: {
     backgroundColor: C.card, borderRadius: R.card, padding: 14, marginBottom: 10,
-    shadowColor: '#0F172A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+    borderWidth: 1, borderColor: C.cardBorder,
+    ...shadow, shadowOpacity: 0.04,
   },
   fieldRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   lbl: { color: C.sub, fontSize: 12, fontWeight: '600' },
@@ -125,7 +129,8 @@ const styles = StyleSheet.create({
   toggleRow: {
     backgroundColor: C.card, borderRadius: R.card, padding: 14, marginBottom: 10,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    shadowColor: '#0F172A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+    borderWidth: 1, borderColor: C.cardBorder,
+    ...shadow, shadowOpacity: 0.04,
   },
   footer: {
     position: 'absolute', left: 0, right: 0, bottom: 0,
